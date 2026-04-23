@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Treap 視覺化</title>
+    <link rel="stylesheet" href="style.css"> 
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <svg id="canvas"></svg>
+
+    <div id="status-bar">status：<span id="status">ready</span></div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn insert" onclick="showInput('insert')">insert</button>
+        <button class="nav-btn delete" onclick="showInput('delete')">remove</button>
+        <button class="nav-btn query" onclick="showInput('query')">qurey</button>
+    </div>
+
+    <div id="input-overlay" class="hidden">
+        <div class="input-card">
+            <h3 id="input-title">operate</h3>
+        
+            <div id="single-input-group">
+                <input type="number" id="node-value" placeholder="index">
+            </div>
+
+            <div id="range-input-group" class="hidden">
+                <input type="number" id="range-l" placeholder="L">
+                <input type="number" id="range-r" placeholder="R">
+            </div>
+
+            <div class="modal-btns">
+                <button onclick="hideInput()">cancel</button>
+                <button id="confirm-btn" class="primary-btn">enter</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="d3-logic.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
