@@ -8,13 +8,18 @@
 </head>
 <body>
     <svg id="canvas"></svg>
+    <div id="lab-controls">
+        <input type="number" id="seed-input" placeholder="Seed (例: 48763)">
+        <button class="lab-btn" onclick="handleSetSeed()">Set Seed</button>
+        <button class="lab-btn" onclick="handleWorstSeed()">Worst Seed</button>
+    </div>
 
     <div id="status-bar">status：<span id="status">ready</span></div>
 
     <div class="bottom-nav">
         <button class="nav-btn insert" onclick="showInput('insert')">insert</button>
-        <button class="nav-btn delete" onclick="showInput('delete')">remove</button>
-        <button class="nav-btn query" onclick="showInput('query')">qurey</button>
+        <button class="nav-btn delete" onclick="showInput('remove')">remove</button>
+        <button class="nav-btn query" onclick="showInput('query')">query</button>
     </div>
 
     <div id="input-overlay" class="hidden">
