@@ -91,7 +91,6 @@ async function handleAction(type) {
 
     //這裡要接後端 接收steps陣列
     if (type === 'insert') {
-        // 依照規範傳入 pos, id, val (這裡 pos 預設為 0，可依專案需求調整)
         await callTreapApi('treap_insert', { pos: 0, id: `n_${val}_${Date.now()}`, val: val });
     } else if (type === 'remove') {
         await callTreapApi('treap_remove', { pos: val });
