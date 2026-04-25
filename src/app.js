@@ -18,6 +18,35 @@ function processQueue() {
     updateTreap(nextTreap);     
     setTimeout(processQueue, 1000);
 }
+async function callTreapApi(endpoint, payload = {}) {
+    try {
+        const response = await fetch(`api/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+
+        if (result.success) {
+            // 如果後端有回傳 steps 陣列，就丟進播放器
+            if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+                playSteps(result.data);
+            }
+            return result;
+        } else {
+            console.error(`API Error (${endpoint}):`, result);
+            alert("操作失敗: " + (result.message || "請檢查主控台"));
+            document.getElementById("status").innerText = "error";
+            return null;
+        }
+    } catch (error) {
+        console.error("Fetch Exception:", error);
+        document.getElementById("status").innerText = "network error";
+        alert("網路連線錯誤，請確認後端是否已啟動。");
+        return null;
+    }
+}
 
 
 function showInput(type) {
@@ -61,12 +90,18 @@ async function handleAction(type) {
     document.getElementById("status").innerText = `running...`;
 
     //這裡要接後端 接收steps陣列
+    if (type === 'insert') {
+        // 依照規範傳入 pos, id, val (這裡 pos 預設為 0，可依專案需求調整)
+        await callTreapApi('treap_insert', { pos: 0, id: `n_${val}_${Date.now()}`, val: val });
+    } else if (type === 'remove') {
+        await callTreapApi('treap_remove', { pos: val });
+    }
 
-    const mockSteps = [
+    //const mockSteps = [
         //可以testdata
-    ];
+    //];
 
-    playSteps(mockSteps);
+    //playSteps(mockSteps);
 }
 
 
@@ -81,11 +116,12 @@ async function handleQuery() {
     document.getElementById("status").innerText = `running...`;
 
     //這裡要接後端 接收steps陣列
+    await callTreapApi('treap_query', { l: L, r: R });
 
-    const mockSteps = [
+    //const mockSteps = [
         //可以testdata
-    ];
-    playSteps(mockSteps);
+    //];
+    //playSteps(mockSteps);
 
 
     
