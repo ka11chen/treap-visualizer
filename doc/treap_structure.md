@@ -23,19 +23,19 @@
 
 ## Python Api Design
 > Flask calls these functions.  
-> Every api will return json{"success":True/False, "data":...}
-
+> Every api will return json{"success":True/False, "data":...}  
+> 1 base  
 - `set_seed((int)seed) -> void`
     > Default seed: 48763
 - `find_worst_seed() -> int`
 - `treap_insert((int)pos, (string)id, (int)val) -> Steps`
 - `treap_remove((int)pos) -> Steps`
 - `treap_query((int)l, (int)r) -> Steps`
-    > ans is in "name"
+    > ans is in "name", [l,r]
 - `treap_build(nodes) -> Steps`
 
 ## Frontend entry
 - `api/(function name)`
 
 ## Frontend layout
-- Do not display or pass node_id. Use size argument to pass.
+- Do not display or pass node_id. Use position to locate(which is the normal usage of treap).
