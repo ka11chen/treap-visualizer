@@ -11,9 +11,8 @@
 
 可以標上highlight: true 來變色
 
-
-
 範例:
+```
 {
   "isVirtual": true,
   "node_id": "vroot",
@@ -43,7 +42,7 @@
     }
   ]
 }
-
+```
 
 index:主檔案
      
