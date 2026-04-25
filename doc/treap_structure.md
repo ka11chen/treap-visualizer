@@ -14,7 +14,6 @@
     - node_id: string
     - val: int 
     - priority: double
-        > (改成 heapId: int)
     - range_max: int
     - isEmpty: bool, defaut false
         > 若parent只有左和右的其中一個，空的那個創建虛擬節點，加此參數  
@@ -39,4 +38,4 @@
 - `api/(function name)`
 
 ## Frontend layout
-- Do not display node_id
+- Do not display or pass node_id. Use size argument to pass.
