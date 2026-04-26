@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 import treap, worst_seed
+import random
 
 app = Flask(__name__)
+t = treap.Treap()
 
 def format_response(success, data):
     return jsonify({
@@ -18,9 +20,9 @@ def api_set_seed():
     try:
         req = request.json
         seed = int(req.get('seed'))
+        s = random.seed(seed)
         
-        treap.set_seed(seed)
-        return format_response(True, None)
+        return format_response(True, s)
     
     except Exception as e:
         return format_response(False, str(e)), 400
@@ -29,8 +31,8 @@ def api_set_seed():
 @app.route('/api/find_worst_seed', methods=['GET'])
 def api_find_worst_seed():
     try:
-        worst_seed = worst_seed.find_worst_seed()
-        return format_response(True, worst_seed)
+        seed = worst_seed.find_worst_seed()
+        return format_response(True, seed)
     
     except Exception as e:
         return format_response(False, str(e)), 500
@@ -44,7 +46,7 @@ def api_treap_insert():
         id = str(req.get('id'))
         val = int(req.get('val'))
         
-        steps = treap.insert(pos, id, val)
+        steps = t.insert(pos, id, val)
         return format_response(True, steps)
     
     except Exception as e:
@@ -57,7 +59,7 @@ def api_treap_remove():
         req = request.json
         pos = int(req.get('pos'))
 
-        steps = treap.remove(pos)
+        steps = t.remove(pos)
         return format_response(True, steps)
     
     except Exception as e:
@@ -71,7 +73,7 @@ def api_treap_query():
         l = int(req.get('l'))
         r = int(req.get('r'))
         
-        steps = treap.query(l, r)
+        steps = t.query(l, r)
         return format_response(True, steps)
     
     except Exception as e:
@@ -84,7 +86,7 @@ def api_treap_build():
         req = request.json
         nodes = req.get('nodes')
         
-        steps = treap.build(nodes)
+        steps = t.build(nodes)
         return format_response(True, steps)
     
     except Exception as e:
