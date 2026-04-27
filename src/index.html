@@ -2,42 +2,61 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Treap 視覺化</title>
-    <link rel="stylesheet" href="style.css"> 
+    <title>Treap Visualization</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-    <svg id="canvas"></svg>
-    <div id="lab-controls">
-        <input type="number" id="seed-input" placeholder="Seed (例: 48763)">
-        <button class="lab-btn" onclick="handleSetSeed()">Set Seed</button>
-        <button class="lab-btn" onclick="handleWorstSeed()">Worst Seed</button>
-    </div>
+    <div class="container">
+        <div class="top-bar">
+            <div id="status-pill">目前動作：<span id="status">Completed</span></div>
+        </div>
 
-    <div id="status-bar">status：<span id="status">ready</span></div>
+        <div id="tree-container"></div>
 
-    <div class="bottom-nav">
-        <button class="nav-btn insert" onclick="showInput('insert')">insert</button>
-        <button class="nav-btn delete" onclick="showInput('remove')">remove</button>
-        <button class="nav-btn query" onclick="showInput('query')">query</button>
+        <div class="bottom-controls">
+            
+            <div class="control-section left">
+                <div class="seed-row">
+                    <input type="number" id="seed-input" value="67">
+                    <button class="small-btn" onclick="handleSetSeed()">Set</button>
+                </div>
+                <button id="worst-seed-btn" class="link-btn" onclick="handleWorstSeed()">Find Worst Seed</button>
+            </div>
+
+            <div class="control-section middle">
+                <div class="play-btns">
+                    <button class="step-btn" onclick="stepBack()">Step Back</button>
+                    <button id="play-pause-btn" class="play-btn" onclick="togglePlay()">Play</button>
+                    <button class="step-btn" onclick="stepNext()">Step Next</button>
+                </div>
+                <div class="speed-row">
+                    <span>Speed:</span>
+                    <input type="range" id="speed-slider" min="200" max="2000" value="1200" onchange="updateSpeed()">
+                </div>
+            </div>
+
+            <div class="control-section right">
+                <button class="main-btn insert" onclick="showInput('insert')">Insert</button>
+                <button class="main-btn remove" onclick="showInput('remove')">Remove</button>
+                <button class="main-btn query" onclick="showInput('query')">Query Range</button>
+            </div>
+        </div>
     </div>
 
     <div id="input-overlay" class="hidden">
-        <div class="input-card">
-            <h3 id="input-title">operate</h3>
-        
+        <div class="modal">
+            <h3 id="input-title">Input</h3>
             <div id="single-input-group">
-                <input type="number" id="node-value" placeholder="index">
+                <input type="number" id="node-value" value="10">
             </div>
-
             <div id="range-input-group" class="hidden">
                 <input type="number" id="range-l" placeholder="L">
                 <input type="number" id="range-r" placeholder="R">
             </div>
-
-            <div class="modal-btns">
-                <button onclick="hideInput()">cancel</button>
-                <button id="confirm-btn" class="primary-btn">enter</button>
+            <div class="modal-actions">
+                <button id="confirm-btn" class="main-btn insert">確認</button>
+                <button onclick="hideInput()" class="cancel-btn">取消</button>
             </div>
         </div>
     </div>
