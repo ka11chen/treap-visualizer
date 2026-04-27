@@ -1,128 +1,196 @@
+let actionQueue = [];      
+let currentStepIdx = -1;   
+let isPlaying = false;     
+let autoPlayTimer = null;  
+let animationSpeed = 1000; 
 
-let actionQueue = [];
-let isPlaying = false;
+window.onload = async () => {
+    document.getElementById("node-value").value = "10";
+    document.getElementById("seed-input").value = "67"; 
+    updateSpeed();
+    await loadInitialArray();
+};
 
-function playSteps(steps) { 
-    actionQueue = [...actionQueue, ...steps];
-    if (!isPlaying) processQueue();
-}
+async function loadInitialArray() {
 
-function processQueue() {
-    if (actionQueue.length === 0) {
-        isPlaying = false;
-        document.getElementById("status").innerText = "ready";
-        return;
+    const initNodes = [
+        { id: "n4", val: 4 },
+        { id: "n8", val: 8 },
+        { id: "n7", val: 7 }
+    ];
+    
+    document.getElementById("status").innerText = "Building...";
+    const res = await callTreapApi('treap_build', { nodes: initNodes });
+    
+    if (res && res.success && res.data.length > 0) {
+        const lastFrame = res.data[res.data.length - 1];
+        updateTreap(lastFrame.data);
+        document.getElementById("status").innerText = "Completed";
     }
-    isPlaying = true;
-    const nextTreap = actionQueue.shift();
-    updateTreap(nextTreap);     
-    setTimeout(processQueue, 1000);
+    updateButtonStates();
 }
+
+function playSteps(steps) {
+    actionQueue = steps;
+    currentStepIdx = 0;
+    updateFrame();
+    if (isPlaying) startAutoPlay();
+}
+
+function togglePlay() {
+    const btn = document.getElementById("play-pause-btn");
+    if (isPlaying) {
+        isPlaying = false;
+        btn.innerText = "Play";
+        btn.style.backgroundColor = "#2ecc71";
+        clearTimeout(autoPlayTimer);
+    } else {
+        isPlaying = true;
+        btn.innerText = "Pause";
+        btn.style.backgroundColor = "#e67e22";
+        startAutoPlay();
+    }
+}
+
+function startAutoPlay() {
+    if (!isPlaying) return;
+    if (currentStepIdx < actionQueue.length - 1) {
+        autoPlayTimer = setTimeout(() => {
+            stepNext();
+            startAutoPlay();
+        }, animationSpeed);
+    } else {
+        isPlaying = false;
+        const btn = document.getElementById("play-pause-btn");
+        btn.innerText = "Play";
+        btn.style.backgroundColor = "#2ecc71";
+    }
+}
+
+function stepNext() {
+    if (currentStepIdx < actionQueue.length - 1) {
+        currentStepIdx++;
+        updateFrame();
+    }
+}
+
+function stepBack() {
+    if (currentStepIdx > 0) {
+        currentStepIdx--;
+        updateFrame();
+    }
+}
+
+function updateFrame() {
+    if (currentStepIdx >= 0 && currentStepIdx < actionQueue.length) {
+        const frame = actionQueue[currentStepIdx];
+        document.getElementById("status").innerText = frame.name || "Running";
+        if (typeof updateTreap === "function") updateTreap(frame.data);
+        updateButtonStates();
+    }
+}
+
+
 async function callTreapApi(endpoint, payload = {}) {
+
+    const method = (endpoint === 'find_worst_seed') ? 'GET' : 'POST';
+    const config = {
+        method: method,
+        headers: { 'Content-Type': 'application/json' }
+    };
+    
+    if (method === 'POST') {
+        config.body = JSON.stringify(payload);
+    }
+
     try {
-        const response = await fetch(`api/${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
+        const response = await fetch(`http://127.0.0.1:5000/api/${endpoint}`, config);
         const result = await response.json();
 
         if (result.success) {
-            // 如果後端有回傳 steps 陣列，就丟進播放器
-            if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+            if (result.data && Array.isArray(result.data)) {
                 playSteps(result.data);
             }
             return result;
         } else {
-            console.error(`API Error (${endpoint}):`, result);
-            alert("操作失敗: " + (result.message || "請檢查主控台"));
-            document.getElementById("status").innerText = "error";
+            console.error("API Error:", result.data);
             return null;
         }
     } catch (error) {
-        console.error("Fetch Exception:", error);
-        document.getElementById("status").innerText = "network error";
-        alert("網路連線錯誤，請確認後端是否已啟動。");
+        console.error("Network Error:", error);
         return null;
     }
 }
 
 
-function showInput(type) {
-    const overlay = document.getElementById("input-overlay");
-    const singleGroup = document.getElementById("single-input-group");
-    const rangeGroup = document.getElementById("range-input-group");
-    const confirmBtn = document.getElementById("confirm-btn");
-    const title = document.getElementById("input-title");
-
-    overlay.classList.remove("hidden");
-
-    if (type === 'query') {
-        title.innerText = "range[L, R]";
-        singleGroup.classList.add("hidden");
-        rangeGroup.classList.remove("hidden");
-        confirmBtn.onclick = () => handleQuery(); 
-    } else {
-        title.innerText = (type === 'insert' ? "insert" : "remove");
-        singleGroup.classList.remove("hidden");
-        rangeGroup.classList.add("hidden");
-        confirmBtn.onclick = () => handleAction(type);
-    }
-}
-
-
-function hideInput() {
-    document.getElementById("input-overlay").classList.add("hidden");
-
-
-    document.getElementById("node-value").value = "";
-    document.getElementById("range-l").value = "";
-    document.getElementById("range-r").value = "";
-}
-
-
 async function handleAction(type) {
     const val = parseInt(document.getElementById("node-value").value);
-    if (isNaN(val)) return alert("請輸入index");
-
+    if (isNaN(val)) return;
     hideInput();
-    document.getElementById("status").innerText = `running...`;
 
-    //這裡要接後端 接收steps陣列
     if (type === 'insert') {
-        await callTreapApi('treap_insert', { pos: 0, id: `n_${val}_${Date.now()}`, val: val });
+
+        await callTreapApi('treap_insert', { 
+            pos: 0, 
+            id: `n${val}_${Date.now()}`, 
+            val: val 
+        });
     } else if (type === 'remove') {
         await callTreapApi('treap_remove', { pos: val });
     }
-
-    //const mockSteps = [
-        //可以testdata
-    //];
-
-    //playSteps(mockSteps);
 }
-
-
 
 async function handleQuery() {
     const L = parseInt(document.getElementById("range-l").value);
     const R = parseInt(document.getElementById("range-r").value);
-
-    if (isNaN(L) || isNaN(R)) return alert("請輸入完整區間");
-
+    if (isNaN(L) || isNaN(R)) return;
     hideInput();
-    document.getElementById("status").innerText = `running...`;
-
-    //這裡要接後端 接收steps陣列
     await callTreapApi('treap_query', { l: L, r: R });
+}
 
-    //const mockSteps = [
-        //可以testdata
-    //];
-    //playSteps(mockSteps);
+async function handleSetSeed() {
+    const seedVal = document.getElementById("seed-input").value;
+    await callTreapApi('set_seed', { seed: seedVal });
 
+    alert("Seed 已經設定為 " + seedVal);
+}
 
-    
+async function handleWorstSeed() {
+
+    const result = await callTreapApi('find_worst_seed');
+    if (result && result.success) {
+        document.getElementById("seed-input").value = result.data;
+    }
+}
+
+async function handleClear() {
+    if (!confirm("確定要重置嗎？")) return;
+    location.reload(); 
+}
+
+function updateButtonStates() {
+    const hasNodes = document.querySelectorAll('.node').length > 0;
+    //const seedBtn = document.getElementById("set-seed-btn");
+    //const worstBtn = document.getElementById("worst-seed-btn");
+    if (seedBtn) seedBtn.disabled = hasNodes;
+    if (worstBtn) worstBtn.disabled = hasNodes;
+}
+
+function updateSpeed() {
+    animationSpeed = 2200 - parseInt(document.getElementById("speed-slider").value);
+}
+
+function showInput(type) {
+    const overlay = document.getElementById("input-overlay");
+    overlay.classList.remove("hidden");
+    const isQuery = (type === 'query');
+    document.getElementById("input-title").innerText = isQuery ? "Range Query" : (type === 'insert' ? "Insert Value" : "Remove Pos");
+    document.getElementById("single-input-group").classList.toggle("hidden", isQuery);
+    document.getElementById("range-input-group").classList.toggle("hidden", !isQuery);
+    document.getElementById("confirm-btn").onclick = () => isQuery ? handleQuery() : handleAction(type);
+}
+
+function hideInput() {
+    document.getElementById("input-overlay").classList.add("hidden");
 }
 
