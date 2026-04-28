@@ -38,14 +38,13 @@ def api_find_worst_seed():
         return format_response(False, str(e)), 500
     
 
-@app.route('/api/insert', methods=['POST'])
+@app.route('/api/treap_insert', methods=['POST'])
 def api_treap_insert():
     try:
         req = request.json
         pos = int(req.get('pos'))
-        id = str(req.get('id'))
         val = int(req.get('val'))
-        t.insert(pos, id, val)
+        t.insert(pos, val)
         
         return format_response(True, flush_log())
     
@@ -53,7 +52,7 @@ def api_treap_insert():
         return format_response(False, str(e)), 400
     
 
-@app.route('/api/remove', methods=['POST'])
+@app.route('/api/treap_remove', methods=['POST'])
 def api_treap_remove():
     try:
         req = request.json
@@ -66,7 +65,7 @@ def api_treap_remove():
         return format_response(False, str(e)), 400
     
 
-@app.route('/api/query', methods=['POST'])
+@app.route('/api/treap_query', methods=['POST'])
 def api_treap_query():
     try:
         req = request.json
@@ -80,21 +79,20 @@ def api_treap_query():
         return format_response(False, str(e)), 400
     
 
-@app.route('/api/build', methods=['POST'])
+@app.route('/api/treap_build', methods=['POST'])
 def api_treap_build():
     try:
         req = request.json
         nodes = req.get('nodes')
-        t.clear()
-        flush_log()
-        t.build(nodes)
+        vals = [n['val'] for n in nodes]
+        t.build(vals)
         
         return format_response(True, flush_log())
     
     except Exception as e:
         return format_response(False, str(e)), 400
     
-@app.route('/api/clear', methods=['GET'])
+@app.route('/api/treap_clear', methods=['GET'])
 def api_treap_clear():
     try:
         t.clear()
