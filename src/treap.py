@@ -179,16 +179,20 @@ class Treap():
         _roots.pop()
         _roots.append(c)
         log.append({"name":"delete node","data":print_treap(_roots)})
+        del b
         self.root= merge_with_log(a,c)
     
     def build(self, nodes): # nodes[i]=val, -> void
-        global _roots,log
         for i in nodes:
             self.root=merge(self.root, node(i))
         _roots.pop()
         _roots.append(self.root)
         log.clear()
-
+        log.append({"name":"initialize","data":print_treap(_roots)})
+    
+    def clear(self):
+        _roots.clear() # no memory free
+        log.append({"name":"clear","data":print_treap(_roots)})
 
 def flush_log():
     global log
@@ -197,15 +201,17 @@ def flush_log():
     res, log = log, [] # for !debug
     return res # for !debug
 
-
 if __name__=='__main__':
     t = Treap()
     t.build([4,8,7,6,3])
+    print(flush_log())
+    t.clear()
+    print(flush_log())
     # t.insert(2,100)
     # flush_log()
     # print("--------------------------")
     # t.remove(2)
     # flush_log()
     # print("--------------------------")
-    t.query(3,5)
-    print(flush_log())
+    # t.query(3,5)
+    # print(flush_log())
