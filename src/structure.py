@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 import treap, worst_seed
+from treap import flush_log
 import random
 
 app = Flask(__name__)
 t = treap.Treap()
-
 def format_response(success, data):
     return jsonify({
         "success": success,
@@ -20,9 +20,9 @@ def api_set_seed():
     try:
         req = request.json
         seed = int(req.get('seed'))
-        s = random.seed(seed)
+        random.seed(seed)
         
-        return format_response(True, s)
+        return format_response(True, seed)
     
     except Exception as e:
         return format_response(False, str(e)), 400
@@ -38,59 +38,71 @@ def api_find_worst_seed():
         return format_response(False, str(e)), 500
     
 
-@app.route('/api/treap_insert', methods=['POST'])
+@app.route('/api/insert', methods=['POST'])
 def api_treap_insert():
     try:
         req = request.json
         pos = int(req.get('pos'))
         id = str(req.get('id'))
         val = int(req.get('val'))
+        t.insert(pos, id, val)
         
-        steps = t.insert(pos, id, val)
-        return format_response(True, steps)
+        return format_response(True, flush_log())
     
     except Exception as e:
         return format_response(False, str(e)), 400
     
 
-@app.route('/api/treap_remove', methods=['POST'])
+@app.route('/api/remove', methods=['POST'])
 def api_treap_remove():
     try:
         req = request.json
         pos = int(req.get('pos'))
+        t.remove(pos)
 
-        steps = t.remove(pos)
-        return format_response(True, steps)
+        return format_response(True, flush_log())
     
     except Exception as e:
         return format_response(False, str(e)), 400
     
 
-@app.route('/api/treap_query', methods=['POST'])
+@app.route('/api/query', methods=['POST'])
 def api_treap_query():
     try:
         req = request.json
         l = int(req.get('l'))
         r = int(req.get('r'))
+        t.query(l, r)
         
-        steps = t.query(l, r)
-        return format_response(True, steps)
+        return format_response(True, flush_log())
     
     except Exception as e:
         return format_response(False, str(e)), 400
     
 
-@app.route('/api/treap_build', methods=['POST'])
+@app.route('/api/build', methods=['POST'])
 def api_treap_build():
     try:
         req = request.json
         nodes = req.get('nodes')
+        t.clear()
+        flush_log()
+        t.build(nodes)
         
-        steps = t.build(nodes)
-        return format_response(True, steps)
+        return format_response(True, flush_log())
     
     except Exception as e:
         return format_response(False, str(e)), 400
+    
+@app.route('/api/clear', methods=['GET'])
+def api_treap_clear():
+    try:
+        t.clear()
+        return format_response(True, flush_log())
+    
+    except Exception as e:
+        return format_response(False, str(e)), 500
+    
     
 
 if __name__ == '__main__':

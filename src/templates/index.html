@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Treap Visualization</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
@@ -61,7 +61,7 @@
         </div>
     </div>
 
-    <script src="d3-logic.js"></script>
-    <script src="app.js"></script>
+    <script src="{{ url_for('static', filename='d3-logic.js') }}"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
